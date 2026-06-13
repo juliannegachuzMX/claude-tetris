@@ -43,9 +43,24 @@ const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
 const themeToggle = document.getElementById('theme-toggle');
 
+const startOverlay = document.getElementById('start-overlay');
+const playBtn = document.getElementById('play-btn');
+const startLeaderboardList = document.getElementById('start-leaderboard-list');
+const startBestStats = document.getElementById('start-best-stats');
+
+const nameEntry = document.getElementById('name-entry');
+const playerNameInput = document.getElementById('player-name-input');
+const saveScoreBtn = document.getElementById('save-score-btn');
+const gameOverLeaderboardList = document.getElementById('game-over-leaderboard-list');
+const gameOverBestStats = document.getElementById('game-over-best-stats');
+
 const THEME_KEY = 'tetris-theme';
+const SCORES_KEY = 'tetris-scores';
+const STATS_KEY = 'tetris-best-stats';
 
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
+let combo = 0, maxCombo = 0;
+let pendingScoreEntry = null;
 let gridColor = '#22222e';
 
 function refreshThemeColors() {
@@ -62,6 +77,63 @@ function setTheme(theme) {
 function initTheme() {
   const saved = localStorage.getItem(THEME_KEY);
   setTheme(saved === 'light' ? 'light' : 'dark');
+}
+
+function loadScores() {
+  try {
+    const raw = localStorage.getItem(SCORES_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveScores(scores) {
+  localStorage.setItem(SCORES_KEY, JSON.stringify(scores.slice(0, 5)));
+}
+
+function loadStats() {
+  try {
+    const raw = localStorage.getItem(STATS_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return {
+      bestCombo: parsed?.bestCombo ?? 0,
+      maxLines: parsed?.maxLines ?? 0,
+    };
+  } catch {
+    return { bestCombo: 0, maxLines: 0 };
+  }
+}
+
+function saveStats(stats) {
+  localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+}
+
+function renderLeaderboard(listEl, scores, highlightEntry) {
+  listEl.innerHTML = '';
+  if (!scores.length) {
+    const li = document.createElement('li');
+    li.textContent = 'Sin récords aún';
+    listEl.appendChild(li);
+    return;
+  }
+  scores.forEach((entry, i) => {
+    const li = document.createElement('li');
+    li.textContent = `${i + 1}. ${entry.name} — ${entry.score.toLocaleString()}`;
+    if (entry === highlightEntry) li.classList.add('highlight');
+    listEl.appendChild(li);
+  });
+}
+
+function renderBestStats(el, stats) {
+  el.innerHTML = '';
+  const comboEl = document.createElement('span');
+  comboEl.innerHTML = `Mejor combo: <span class="stat-value">${stats.bestCombo}</span>`;
+  const maxLinesEl = document.createElement('span');
+  maxLinesEl.innerHTML = `Máx. líneas: <span class="stat-value">${stats.maxLines}</span>`;
+  el.appendChild(comboEl);
+  el.appendChild(maxLinesEl);
 }
 
 function createBoard() {
@@ -130,7 +202,11 @@ function clearLines() {
     score += (LINE_SCORES[cleared] || 0) * level;
     level = Math.floor(lines / 10) + 1;
     dropInterval = Math.max(100, 1000 - (level - 1) * 90);
+    combo++;
+    maxCombo = Math.max(maxCombo, combo);
     updateHUD();
+  } else {
+    combo = 0;
   }
 }
 
@@ -246,6 +322,28 @@ function endGame() {
   overlayTitle.textContent = 'GAME OVER';
   overlayScore.textContent = `Puntuación: ${score.toLocaleString()}`;
   overlay.classList.remove('hidden');
+
+  const stats = loadStats();
+  stats.bestCombo = Math.max(stats.bestCombo, maxCombo);
+  stats.maxLines = Math.max(stats.maxLines, lines);
+  saveStats(stats);
+
+  const scores = loadScores();
+  const qualifies = scores.length < 5 || score > scores[scores.length - 1].score;
+
+  if (qualifies) {
+    pendingScoreEntry = { score, lines, level };
+    nameEntry.classList.remove('hidden');
+    playerNameInput.value = '';
+    playerNameInput.focus();
+    renderLeaderboard(gameOverLeaderboardList, scores, null);
+  } else {
+    pendingScoreEntry = null;
+    nameEntry.classList.add('hidden');
+    renderLeaderboard(gameOverLeaderboardList, scores, null);
+  }
+
+  renderBestStats(gameOverBestStats, stats);
 }
 
 function togglePause() {
@@ -285,6 +383,8 @@ function init() {
   level = 1;
   paused = false;
   gameOver = false;
+  combo = 0;
+  maxCombo = 0;
   dropInterval = 1000;
   dropAccum = 0;
   lastTime = performance.now();
@@ -297,6 +397,7 @@ function init() {
 }
 
 document.addEventListener('keydown', e => {
+  if (!current) return; // partida aún no iniciada (pantalla de inicio)
   if (e.code === 'KeyP') { togglePause(); return; }
   if (paused || gameOver) return;
   switch (e.code) {
@@ -321,12 +422,43 @@ document.addEventListener('keydown', e => {
   updateHUD();
 });
 
-restartBtn.addEventListener('click', init);
+restartBtn.addEventListener('click', () => {
+  nameEntry.classList.add('hidden');
+  init();
+});
 
 themeToggle.addEventListener('change', () => {
   setTheme(themeToggle.checked ? 'light' : 'dark');
-  draw();
+  if (current) draw();
 });
 
+playBtn.addEventListener('click', () => {
+  startOverlay.classList.add('hidden');
+  init();
+});
+
+saveScoreBtn.addEventListener('click', () => {
+  const name = playerNameInput.value.trim() || 'AAA';
+  const scores = loadScores();
+  const entry = { name, ...pendingScoreEntry };
+  scores.push(entry);
+  scores.sort((a, b) => b.score - a.score);
+  scores.splice(5);
+  saveScores(scores);
+  nameEntry.classList.add('hidden');
+  renderLeaderboard(gameOverLeaderboardList, scores, entry);
+});
+
+document.querySelectorAll('.reset-scores-btn').forEach(btn => btn.addEventListener('click', () => {
+  if (!confirm('¿Borrar todos los récords?')) return;
+  localStorage.removeItem(SCORES_KEY);
+  localStorage.removeItem(STATS_KEY);
+  renderLeaderboard(startLeaderboardList, []);
+  renderBestStats(startBestStats, { bestCombo: 0, maxLines: 0 });
+  renderLeaderboard(gameOverLeaderboardList, []);
+  renderBestStats(gameOverBestStats, { bestCombo: 0, maxLines: 0 });
+}));
+
 initTheme();
-init();
+renderLeaderboard(startLeaderboardList, loadScores());
+renderBestStats(startBestStats, loadStats());

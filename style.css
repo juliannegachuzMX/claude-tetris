@@ -216,6 +216,10 @@ kbd {
   display: none;
 }
 
+.hidden {
+  display: none;
+}
+
 .overlay-box {
   text-align: center;
   display: flex;
@@ -252,5 +256,144 @@ kbd {
 }
 
 #restart-btn:hover {
+  background: var(--restart-hover);
+}
+
+/* ---- Start overlay ---- */
+#start-overlay {
+  position: absolute;
+  background: var(--overlay-bg);
+}
+
+#start-overlay .overlay-box {
+  width: 240px;
+}
+
+#start-overlay-title {
+  margin-bottom: 4px;
+}
+
+/* ---- Leaderboard ---- */
+.leaderboard-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+}
+
+.leaderboard-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  color: var(--text);
+}
+
+.leaderboard-list li.highlight {
+  background: var(--kbd-bg);
+  color: var(--value-color);
+  text-shadow: 0 0 8px var(--title-glow);
+  font-weight: 700;
+}
+
+/* ---- Best stats ---- */
+.best-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--controls-color);
+  text-align: center;
+}
+
+.best-stats .stat-value {
+  color: var(--value-color);
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
+}
+
+/* ---- Name entry ---- */
+#name-entry {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+#name-entry.hidden {
+  display: none;
+}
+
+#player-name-input {
+  flex: 1;
+  background: var(--kbd-bg);
+  border: 1px solid var(--kbd-border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  min-width: 0;
+}
+
+#player-name-input:focus {
+  outline: 1px solid var(--value-color);
+}
+
+#save-score-btn {
+  background: var(--restart-bg);
+  color: var(--restart-color);
+  border: none;
+  border-radius: 4px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background 0.15s;
+}
+
+#save-score-btn:hover {
+  background: var(--restart-hover);
+}
+
+/* ---- Reset records button ---- */
+.reset-scores-btn {
+  margin-top: 4px;
+  background: var(--kbd-bg);
+  color: var(--controls-color);
+  border: 1px solid var(--kbd-border);
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.reset-scores-btn:hover {
+  background: var(--kbd-border);
+  color: var(--text);
+}
+
+#play-btn {
+  margin-top: 4px;
+  background: var(--restart-bg);
+  color: var(--restart-color);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 28px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.15s;
+}
+
+#play-btn:hover {
   background: var(--restart-hover);
 }
