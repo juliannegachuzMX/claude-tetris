@@ -22,6 +22,16 @@
         </div>
 
         <div class="panel-section">
+          <span class="label">SKIN</span>
+          <select id="skin-select" aria-label="Cambiar skin visual del tablero">
+            <option value="retro">Retro</option>
+            <option value="neon">Neon</option>
+            <option value="pastel">Pastel</option>
+            <option value="pixel">Pixel Art</option>
+          </select>
+        </div>
+
+        <div class="panel-section">
           <span class="label">SCORE</span>
           <span class="value" id="score">0</span>
         </div>
@@ -46,17 +56,88 @@
             <li><kbd>↑</kbd> rotar</li>
             <li><kbd>↓</kbd> bajar</li>
             <li><kbd>Space</kbd> caída</li>
-            <li><kbd>P</kbd> pausa</li>
+            <li><kbd>P</kbd> / <kbd>Esc</kbd> pausa</li>
           </ul>
         </div>
       </aside>
+    </div>
+
+    <div id="start-overlay" class="overlay">
+      <div class="overlay-box">
+        <h2 class="overlay-heading">TETRIS</h2>
+        <div class="records-panel">
+          <h3 class="records-title">TOP 5</h3>
+          <ol id="start-highscores" class="highscores-list"></ol>
+          <div class="extra-stats">
+            <span>Mejor combo: <strong id="start-best-combo">0</strong></span>
+            <span>Líneas máx.: <strong id="start-max-lines">0</strong></span>
+          </div>
+          <button id="reset-records-btn" class="link-btn">Resetear récords</button>
+        </div>
+        <button id="start-btn" class="btn-primary">JUGAR</button>
+      </div>
     </div>
 
     <div id="overlay" class="overlay hidden">
       <div class="overlay-box">
         <p id="overlay-title">GAME OVER</p>
         <p id="overlay-score"></p>
-        <button id="restart-btn">Reiniciar</button>
+        <div id="new-record-form" class="new-record hidden">
+          <label for="player-name">¡Nuevo récord! Ingresa tu nombre:</label>
+          <div class="new-record-input">
+            <input type="text" id="player-name" maxlength="12" placeholder="Jugador" />
+            <button id="save-score-btn">Guardar</button>
+          </div>
+        </div>
+        <div id="gameover-records-panel" class="records-panel hidden">
+          <h3 class="records-title">TOP 5</h3>
+          <ol id="gameover-highscores" class="highscores-list"></ol>
+          <div class="extra-stats">
+            <span>Mejor combo: <strong id="go-best-combo">0</strong></span>
+            <span>Líneas máx.: <strong id="go-max-lines">0</strong></span>
+          </div>
+          <button id="reset-records-btn-go" class="link-btn">Resetear récords</button>
+        </div>
+        <button id="restart-btn" class="btn-primary">Reiniciar</button>
+      </div>
+    </div>
+
+    <div id="pause-overlay" class="overlay hidden">
+      <div class="overlay-box pause-box">
+        <p class="pause-title">PAUSA</p>
+
+        <div id="pause-menu-main" class="pause-menu">
+          <button id="resume-btn" class="menu-btn">Reanudar</button>
+          <button id="restart-pause-btn" class="menu-btn">Reiniciar</button>
+          <button id="show-controls-btn" class="menu-btn">Ver controles</button>
+
+          <div class="level-select">
+            <label for="start-level-select" class="label">NIVEL INICIAL</label>
+            <select id="start-level-select">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="pause-menu-controls" class="pause-controls hidden">
+          <ul>
+            <li><kbd>←</kbd><kbd>→</kbd> mover</li>
+            <li><kbd>↑</kbd> / <kbd>X</kbd> rotar</li>
+            <li><kbd>↓</kbd> bajar</li>
+            <li><kbd>Space</kbd> caída</li>
+            <li><kbd>P</kbd> / <kbd>Esc</kbd> pausa</li>
+          </ul>
+          <button id="back-btn" class="menu-btn">Volver</button>
+        </div>
       </div>
     </div>
   </div>
