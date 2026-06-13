@@ -99,7 +99,10 @@ jobs:
 
             3. **Diagnostic comment**: post exactly ONE comment in Spanish
                with `gh issue comment ${{ github.event.issue.number }}
-               --body "..."` using this structure:
+               --body "..."` using this structure. Escribe el contenido con
+               estilo hip hop (rimas, flow, jerga urbana en español), pero
+               manteniendo el formato Markdown y la claridad técnica de cada
+               sección para que se entienda bien:
 
                ## Diagnóstico automático
 
