@@ -127,6 +127,23 @@ body {
   border-radius: 4px;
 }
 
+/* ---- Dropdowns ---- */
+.dropdown {
+  background: var(--kbd-bg);
+  border: 1px solid var(--kbd-border);
+  color: var(--text);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dropdown:focus {
+  outline: 1px solid var(--value-color);
+}
+
 /* ---- Toggle de tema ---- */
 .theme-toggle {
   flex-direction: row;

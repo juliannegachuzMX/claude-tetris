@@ -42,11 +42,15 @@ const overlayTitle = document.getElementById('overlay-title');
 const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
 const themeToggle = document.getElementById('theme-toggle');
+const skinSelect = document.getElementById('skin-select');
 
 const THEME_KEY = 'tetris-theme';
+const SKIN_KEY = 'tetris-skin';
+const SKINS = ['retro', 'neon', 'pastel', 'pixel'];
 
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 let gridColor = '#22222e';
+let currentSkin = 'retro';
 
 function refreshThemeColors() {
   gridColor = getComputedStyle(document.body).getPropertyValue('--grid-line').trim();
@@ -62,6 +66,19 @@ function setTheme(theme) {
 function initTheme() {
   const saved = localStorage.getItem(THEME_KEY);
   setTheme(saved === 'light' ? 'light' : 'dark');
+}
+
+function setSkin(skin) {
+  currentSkin = skin;
+  skinSelect.value = skin;
+  localStorage.setItem(SKIN_KEY, skin);
+  if (current) draw();
+  if (next) drawNext();
+}
+
+function initSkin() {
+  const saved = localStorage.getItem(SKIN_KEY);
+  setSkin(SKINS.includes(saved) ? saved : 'retro');
 }
 
 function createBoard() {
@@ -178,15 +195,75 @@ function updateHUD() {
   levelEl.textContent = level;
 }
 
+function toPastel(hexColor) {
+  const r = parseInt(hexColor.slice(1, 3), 16);
+  const g = parseInt(hexColor.slice(3, 5), 16);
+  const b = parseInt(hexColor.slice(5, 7), 16);
+  const mix = channel => Math.round(channel + (255 - channel) * 0.5);
+  return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
+}
+
+function drawRoundedRect(context, x, y, w, h, r) {
+  context.beginPath();
+  if (typeof context.roundRect === 'function') {
+    context.roundRect(x, y, w, h, r);
+    return;
+  }
+  // fallback manual rounded rect path
+  context.moveTo(x + r, y);
+  context.arcTo(x + w, y, x + w, y + h, r);
+  context.arcTo(x + w, y + h, x, y + h, r);
+  context.arcTo(x, y + h, x, y, r);
+  context.arcTo(x, y, x + w, y, r);
+  context.closePath();
+}
+
+function drawPixelTexture(context, px, py, size, color) {
+  const cell = size / 3;
+  context.fillStyle = 'rgba(0,0,0,0.14)';
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < 3; c++) {
+      if ((r + c) % 2 === 0) {
+        context.fillRect(px + c * cell, py + r * cell, cell, cell);
+      }
+    }
+  }
+  context.fillStyle = 'rgba(255,255,255,0.10)';
+  context.fillRect(px + 1, py + 1, size - 2, 2);
+}
+
 function drawBlock(context, x, y, colorIndex, size, alpha) {
   if (!colorIndex) return;
   const color = COLORS[colorIndex];
   context.globalAlpha = alpha ?? 1;
-  context.fillStyle = color;
-  context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
-  // highlight
-  context.fillStyle = 'rgba(255,255,255,0.12)';
-  context.fillRect(x * size + 1, y * size + 1, size - 2, 4);
+  const px = x * size, py = y * size;
+
+  switch (currentSkin) {
+    case 'neon':
+      context.fillStyle = '#0a0a0f';
+      context.fillRect(px + 1, py + 1, size - 2, size - 2);
+      context.shadowColor = color;
+      context.shadowBlur = size * 0.35;
+      context.fillStyle = color;
+      context.fillRect(px + 3, py + 3, size - 6, size - 6);
+      context.shadowBlur = 0;
+      break;
+    case 'pastel':
+      context.fillStyle = toPastel(color);
+      drawRoundedRect(context, px + 1, py + 1, size - 2, size - 2, size * 0.18);
+      context.fill();
+      break;
+    case 'pixel':
+      context.fillStyle = color;
+      context.fillRect(px + 1, py + 1, size - 2, size - 2);
+      drawPixelTexture(context, px + 1, py + 1, size - 2, color);
+      break;
+    default: // retro
+      context.fillStyle = color;
+      context.fillRect(px + 1, py + 1, size - 2, size - 2);
+      context.fillStyle = 'rgba(255,255,255,0.12)';
+      context.fillRect(px + 1, py + 1, size - 2, 4);
+  }
   context.globalAlpha = 1;
 }
 
@@ -328,5 +405,8 @@ themeToggle.addEventListener('change', () => {
   draw();
 });
 
+skinSelect.addEventListener('change', () => setSkin(skinSelect.value));
+
 initTheme();
+initSkin();
 init();
